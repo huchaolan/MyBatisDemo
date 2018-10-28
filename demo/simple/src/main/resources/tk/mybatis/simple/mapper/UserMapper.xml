@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="tk.mybatis.simple.mapper.UserMapper"><!-- 命名空间是接口的全限定名称 -->
+	<resultMap id="userMap" type="tk.mybatis.simple.model.SysUser">
+		<id property="id" column="id" />
+		<result property="username" column="user_name" />
+		<result property="userPassword" column="user_password" />
+		<result property="userEmail" column="user_email" />
+		<result property="userInfo" column="user_info" />
+		<result property="headImg" column="head_img"  jdbcType="BLOB"/>
+		<result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+	</resultMap>
+	
+	<select id="selectById" resultMap="userMap">
+		select * from sys_user where id=#{id}
+	</select>
+</mapper>

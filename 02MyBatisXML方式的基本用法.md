@@ -83,6 +83,49 @@ MyBatis默认是**遵循下划线转驼峰**的命名方式,比如数据字段�
 
 ## 使用XML方式
 
+### 创建对应的xml文件
+
+在src/main/resources目录下的tk.mybatis.simple.mapper目录下创建xml文件。分别对应上面的各个表，名称分别是PrivilegeMapper.xml，RoleMapper.xml，RolePrivilege.xml，UserMapper.xml，UserRoleMapper.xml，大致内容如下:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="tk.mybatis.simple.mapper.RolePrivilege">
+</mapper>
+```
+
+注意：namespace属性的值是定义接口的全名称限定
+
+### 创建对应的接口
+
+在src/main/java目录下创建tk.mybatis.simple.mapper包，并且创建xml相同名称的接口:PrivilegeMapper.java,RoleMapper.java,RolePrivilege.java,UserMapper.java,UserRoleMapper.java
+
+### 向MyBatis添加Mapper文件
+
+在mybatis-config.xml的mappers元素添加新增的xml文件。添加方式有两种：1.一个个添加,2.添加一个包名,mybatis会扫描
+
+```xml
+<mappers>
+    <mapper resource="tk/mybatis/simple/mapper/PrivilegeMapper.xml" />
+    <mapper resource="tk/mybatis/simple/mapper/RoleMapper.xml" />
+    <mapper resource="tk/mybatis/simple/mapper/RolePrivilege.xml" />
+    <mapper resource="tk/mybatis/simple/mapper/UserMapper.xml" />
+    <mapper resource="tk/mybatis/simple/mapper/UserRoleMapper.xml" />
+</mappers>
+```
+
+```xml
+<mappers>
+    <package name="tk.mybatis.simple.mapper" />
+</mappers>
+```
+
+这种配置方式会先查找tk.mybatis.simple.mapper包下所有的接口，循环对接口进行如下操作
+
+1. 判断接口对应的命名空间是否已经存在，如果存在就抛出异常，不存在就继续进行接下来的操作。
+2. 加载接口对应的XML映射文件，将接口全限定名转换为路径，例如，将接口tk.mybatis.simple.mapper.UserMapper转换为tk/mybatis/simple/mapper/UserMapper.xml，以.xml为后缀搜索XML资源，如果找到就解析XML。
+3. 处理接口中的注解方法。
+
 ## select用法
 
 ## insert用法

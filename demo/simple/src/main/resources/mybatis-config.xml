@@ -25,5 +25,6 @@
 
 	<mappers><!--完整类的路径，sql预计和映射配置文件-->
 		<mapper resource="tk/mybatis/simple/mapper/CountryMapper.xml" />
+		<package name="tk.mybatis.simple.mapper" />
 	</mappers>
 </configuration>
