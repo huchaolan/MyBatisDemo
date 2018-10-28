@@ -1,8 +1,31 @@
 package tk.mybatis.simple.model;
 
+import java.util.Arrays;
 import java.util.Date;
 
 public class SysUser {
+    
+    @Override
+    public String toString() {
+        return "SysUser [id=" + id + ", userName=" + userName
+                + ", userPassword=" + userPassword + ", userEmail=" + userEmail
+                + ", userInfo=" + userInfo + ", headImg="
+                + Arrays.toString(headImg) + ", createTime=" + createTime + "]";
+    }
+
+    private Long id;
+    
+    private String userName;
+    
+    private String userPassword;
+    
+    private String userEmail;
+    
+    private String userInfo;
+    
+    private byte[] headImg;
+    
+    private Date createTime;
     
     public Long getId() {
         return id;
@@ -60,17 +83,4 @@ public class SysUser {
         this.createTime = createTime;
     }
 
-    private Long id;
-    
-    private String userName;
-    
-    private String userPassword;
-    
-    private String userEmail;
-    
-    private String userInfo;
-    
-    private byte[] headImg;
-    
-    private Date createTime;
 }

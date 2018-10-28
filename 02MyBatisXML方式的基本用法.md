@@ -128,6 +128,138 @@ MyBatis默认是**遵循下划线转驼峰**的命名方式,比如数据字段�
 
 ## select用法
 
+为UserMapper接口添加查询方法
+
+```java
+public interface UserMapper {
+    public SysUser selectById(Long id);
+}
+```
+
+在UserMapper.xml添加resultMap和select元素，用于结果集映射和查询
+
+```xml
+<mapper namespace="tk.mybatis.simple.mapper.UserMapper">
+    <resultMap id="userMap" type="tk.mybatis.simple.model.SysUser">
+        <id property="id" column="id" />
+        <result property="username" column="user_name" />
+        <result property="userPassword" column="user_password" />
+        <result property="userEmail" column="user_email" />
+        <result property="userInfo" column="user_info" />
+        <result property="headImg" column="head_img"  jdbcType="BLOB"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="selectById" resultMap="userMap">
+        select * from sys_user where id=#{id}
+    </select>
+</mapper>
+```
+
+MyBatis使用select元素的id和接口的名称一致，通过这种方式将把方法调用和sql联系在一起。命名规则如下：
+
+1. 当namespace不使用接口，只要不重复即可
+2. id属性值不能有.且不能重复
+3. 接口方法可以重载导致出现方法名称相同但参数不同的方法，但是xml中id不能有重复的，会出现多个方法对应一个xml的id
+
+### select元素
+
++ select元素映射查询语句使用的标签
++ id命名空间的唯一表示
++ resultMap用于返回值的类型和映射关系，属性值是resultMap元素的id
++ select &lowast; form sys_user where id=#{id}是查询语句，使用*查询所有列时MyBatis也可以进行映射
++ #{id}是预编译参数的一种方式，{id}表示传入的参数名
+
+### resultMap元素
+
++ resultMap是一种配置结果映射的方法
++ id：必填，并且唯一。
++ type：必填，用于配置查询列所映射到的Java对象类型
++ extends：选填，当前resultMap继承其他的resultMap
++ autoMapping:选填，用于配置是否启用非映射字段的自动映射功能，可以覆盖全局的autoMappingBehavior配置。
+
+resultMap的子元素：
+
++ constructor：配置使用构造方法注入结果，包含idArg和arg两个元素
++ id：一个id结果，标记结果作为id，可以帮助提高整体性能
++ result：注入到Java对象属性的普通结果
++ association:复杂的类型关联，许多结果将包成的类型
++ collection：复杂类型的集合
++ discriminator:根据结果值决定使用哪个结果映射
++ case 基于值的结果映射
+
+id和result包含的属性：
+
++ column:从数据库中得到列名或者它的别名
++ property:java对象的属性名称，可以使用点分的形式表示嵌套对象的属性:address.street.number.
++ javaType:Java类的完全限定名称或者类型别名，通过typeAlias配置或者默认的类型,映射到javaBean，会自动判断是属性类型，映射Map需要指定javaType属性。
++ jdbcType:列对应的数据库类型，JDBC类型仅仅需要对插入，更新，删除操作可能为空的列进行处理。
++ typeHandler：默认类型处理器
+
+### 定义返回值类型
+
+结果定义的返回值类型必须和XML中配置的resultType类型一致，否则就抛出异常。**返回值类型是有XML中resultType或者resultMap中type决定的，不是有接口中写的返回值类型决定的**，比如：新增查询全部用户的方法
+
+```java
+public List<SysUser> selectAllUser();
+```
+
+对应的xml
+
+```xml
+<select id="selectAllUser" resultType="tk.mybatis.simple.model.SysUser">
+    select id,
+        user_name userName,
+        user_password userPassword,
+        user_email userEmail,
+        user_info userInfo,
+        head_img headImg,
+        create_time createTime
+    from sys_user
+</select>
+```
+
+MyBatis中如果结果定义是一个对象，而查询结果是多个对象那么就会抛出TooManyResultsException异常。
+这里使用resultType和resultMap的不同是在于resultType需要在sql使用别名来调整sql中列名和javabean的属性名不一致的情况
+
+### 名称映射规则
+
+property属性或者别名要和对象属性的名字相同，MyBatis会先将两者转换成大写形式，然后判断是否相同，所以usename和userName是一个属性，不需要考虑大小写是否一致。
+数据库的字段由于设置不区分大小写，常常使用下划线的命名很常见，user_mail,而java中常常使用驼峰式命名，MyBatis提供了mapUnderscoreToCamelCase属性配置是否自动将下划线方式转换成驼峰方式。
+
+### 测试相关方法
+
+```java
+UserMapper userMapper = session.getMapper(UserMapper.class);
+SysUser user = userMapper.selectById(1L);
+List<SysUser> userList = userMapper.selectAllUser();
+```
+
+通过session.getMapper方法可以返回代理类，使用代理可以直接查询数据库并将结果集映射成javabean返回
+
+### 查询复杂结果集
+
+对于嵌套javaBean有两种方式：对于少量字段需要处理的，可以新建一个类，继承原来的javaBean，如果字段很多那么就需要改造原有的javaBean，比如：在SysRole中需要增加用户的信息。
+
+```xml
+<select id="selectRoleById" resultType="tk.mybatis.simple.model.SysRole">
+    SELECT r.id,
+        r.role_name roleName,
+        r.enabled,
+        r.create_by createBy,
+        r.create_time createTime,
+        u.user_name 'user.userName',
+        u.user_email 'user.userEmail'
+    FROM
+        sys_role r
+    INNER JOIN sys_user_role ur ON ur.role_id = r.id
+    INNER JOIN sys_user u ON u.id = ur.user_id
+    WHERE
+        u.id = #{userid}
+</select>
+```
+
+在别名中设置user.userName就可以设置嵌套对象了，上面的配置只写入用户的邮箱和名称
+
 ## insert用法
 
 ## update用法

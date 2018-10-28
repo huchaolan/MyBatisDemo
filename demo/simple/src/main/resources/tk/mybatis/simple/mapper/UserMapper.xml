@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="tk.mybatis.simple.mapper.UserMapper"><!-- 命名空间是接口的全限定名称 -->
+<mapper namespace="tk.mybatis.simple.mapper.UserMapper">
 	<resultMap id="userMap" type="tk.mybatis.simple.model.SysUser">
 		<id property="id" column="id" />
-		<result property="username" column="user_name" />
+		<result property="userName" column="user_name" />
 		<result property="userPassword" column="user_password" />
 		<result property="userEmail" column="user_email" />
 		<result property="userInfo" column="user_info" />
@@ -14,5 +14,33 @@
 	
 	<select id="selectById" resultMap="userMap">
 		select * from sys_user where id=#{id}
+	</select>
+	
+	<select id="selectAllUser" resultType="tk.mybatis.simple.model.SysUser">
+		select id,
+			user_name userName,
+			user_password userPassword,
+			user_email userEmail,
+			user_info userInfo,
+			head_img headImg,
+			create_time createTime
+	 	from sys_user
+	</select>
+	
+	<select id="selectRoleById" resultType="tk.mybatis.simple.model.SysRole">
+		SELECT 
+		    r.id,
+		    r.role_name roleName,
+		    r.enabled,
+		    r.create_by createBy,
+		    r.create_time createTime,
+		    u.user_name 'user.userName',
+		    u.user_email 'user.userEmail'
+		FROM
+		    sys_role r
+		INNER JOIN sys_user_role ur ON ur.role_id = r.id
+		INNER JOIN sys_user u ON u.id = ur.user_id
+		WHERE
+		    u.id = #{userid}
 	</select>
 </mapper>

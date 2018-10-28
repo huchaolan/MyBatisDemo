@@ -11,6 +11,16 @@ public class SysRole {
     
     private Long createBy;
     
+    private SysUser user;
+    
+    public SysUser getUser() {
+        return user;
+    }
+
+    public void setUser(SysUser user) {
+        this.user = user;
+    }
+
     public Long getId() {
         return id;
     }
